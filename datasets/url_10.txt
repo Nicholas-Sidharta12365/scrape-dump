@@ -1,0 +1,223 @@
+
+
+
+
+
+Plugins — Nextflow documentation
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Version dev (7c4538159) 
+
+Stable
+Edge
+Latest
+
+
+
+
+
+Get started
+
+Overview
+Installation
+Your first script
+
+Running pipelines
+
+Command line
+Configuration
+Executors
+Caching and resuming
+Reports
+Plugins
+Core plugins
+Using plugins
+Offline usage
+
+
+
+Developing pipelines
+
+Scripts
+Working with files
+Processes
+Channels
+Workflows
+Modules
+Notifications
+Secrets
+Sharing pipelines
+Migrating from DSL 1
+
+Software dependencies
+
+Git
+Containers
+Conda environments
+Spack environments
+Wave containers
+
+Compute & storage
+
+Amazon Web Services
+Amazon S3
+Azure
+Google Cloud
+Kubernetes
+Fusion file system
+
+Reference
+
+CLI reference
+Configuration options
+Environment variables
+Feature flags
+Standard library
+Process reference
+Channel factories
+Operators
+
+Contributing
+
+Overview
+Workflow Diagram
+Packages
+Plugins
+
+Tutorials
+
+Using Nextflow with Flux
+Understanding task resource metrics
+
+
+
+
+            Nextflow is developed by:
+
+
+
+
+
+
+
+Nextflow
+
+
+
+
+
+
+Plugins
+
+ Edit on GitHub
+
+
+
+
+
+
+
+Plugins
+Nextflow has a plugin system that allows the use of extensible components that are downloaded and installed at runtime.
+
+Core plugins
+The following functionalities are provided via plugin components, and they make part of the Nextflow core plugins:
+
+nf-amazon: Support for Amazon Web Services.
+nf-azure: Support for Microsoft Azure.
+nf-cloudcache: Support for the cloud cache (see NXF_CLOUDCACHE_PATH under Environment variables).
+nf-console: Implement Nextflow REPL console.
+nf-google: Support for Google Cloud.
+nf-tower: Support for Seqera Platform (formerly Tower Cloud).
+nf-wave: Support for Wave containers service.
+
+
+
+Using plugins
+The core plugins do not require any configuration. They are automatically installed when the corresponding feature is requested by a Nextflow pipeline. You can still specify them as described below, e.g. if you want to pin the version of a plugin, however if you try to use a plugin version that isn’t compatible with your Nextflow version, Nextflow will fail.
+You can enable a plugin by declaring it in your Nextflow configuration:
+plugins {
+    id 'nf-hello@0.1.0'
+}
+
+
+Or you can use the -plugins command line option:
+nextflow run <pipeline> -plugins nf-hello@0.1.0
+
+
+The plugin identifier consists of the plugin name and plugin version separated by a @. Multiple plugins can be specified in the configuration with multiple id declarations, or on the command line as a comma-separated list. When specifying plugins via the command line, any plugin declarations in the configuration file are ignored.
+The plugin version is optional. If it is not specified, Nextflow will download the latest plugin version that is compatible with your Nextflow version. In general, it recommended that you not specify the plugin version unless you actually want to stick to that version, such as for offline usage.
+The core plugins are documented in this documentation. For all other plugins, please refer to the plugin’s code repository for documentation and support.
+
+
+Offline usage
+To use Nextflow plugins in an offline environment:
+
+Install Nextflow on a system with an internet connection. Do not use the “all” package, as this does not allow the use of custom plugins.
+Download any additional plugins by running nextflow plugin install <pluginId,..>. Alternatively, simply run your pipeline once and Nextflow will download all of the plugins that it needs.
+Copy the nextflow binary and $HOME/.nextflow folder to your offline environment.
+In your Nextflow configuration file, specify each plugin that you downloaded, both name and version, including default plugins. This will prevent Nextflow from trying to download newer versions of plugins.
+
+Nextflow caches the plugins that it downloads, so as long as you keep using the same Nextflow version and pin your plugin versions in your config file, Nextflow will use the locally installed plugins and won’t try to download them from the Internet.
+
+
+
+
+
+ Previous
+Next 
+
+
+
+© Copyright 2024, Seqera Labs, S.L.
+
+
+  Built with Sphinx using a
+    theme
+    provided by Read the Docs.
+   
+
+
+
+
+
+
+
+
+
+
+

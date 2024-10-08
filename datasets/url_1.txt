@@ -1,0 +1,226 @@
+
+
+
+
+
+Nextflow — Nextflow documentation
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Version dev (7c4538159) 
+
+Stable
+Edge
+Latest
+
+
+
+
+
+Get started
+
+Overview
+Installation
+Your first script
+
+Running pipelines
+
+Command line
+Configuration
+Executors
+Caching and resuming
+Reports
+Plugins
+
+Developing pipelines
+
+Scripts
+Working with files
+Processes
+Channels
+Workflows
+Modules
+Notifications
+Secrets
+Sharing pipelines
+Migrating from DSL 1
+
+Software dependencies
+
+Git
+Containers
+Conda environments
+Spack environments
+Wave containers
+
+Compute & storage
+
+Amazon Web Services
+Amazon S3
+Azure
+Google Cloud
+Kubernetes
+Fusion file system
+
+Reference
+
+CLI reference
+Configuration options
+Environment variables
+Feature flags
+Standard library
+Process reference
+Channel factories
+Operators
+
+Contributing
+
+Overview
+Workflow Diagram
+Packages
+Plugins
+
+Tutorials
+
+Using Nextflow with Flux
+Understanding task resource metrics
+
+
+
+
+            Nextflow is developed by:
+
+
+
+
+
+
+
+Nextflow
+
+
+
+
+
+
+Nextflow
+
+ Edit on GitHub
+
+
+
+
+
+
+
+Nextflow
+“Dataflow variables are spectacularly expressive in concurrent programming”
+Henri E. Bal , Jennifer G. Steiner , Andrew S. Tanenbaum
+
+
+
+
+
+
+Nextflow is a workflow system for creating scalable, portable, and reproducible workflows. It is based on the dataflow programming model, which greatly simplifies the writing of parallel and distributed pipelines, allowing you to focus on the flow of data and computation. Nextflow can deploy workflows on a variety of execution platforms, including your local machine, HPC schedulers, AWS Batch, Azure Batch, Google Cloud Batch, and Kubernetes. Additionally, it supports many ways to manage your software dependencies, including Conda, Spack, Docker, Podman, Singularity, and more.
+
+Get started
+
+Get an overview of Nextflow and its key concepts.
+Get started with Nextflow by installing it and running your first script.
+Check out this blog post for even more resources on how to learn Nextflow.
+
+
+
+Community
+You can post questions and get help in the Nextflow community forum or the Nextflow Slack. Bugs and feature requests should be reported as GitHub issues.
+The Nextflow community is highly active with regular community meetings, events, a podcast and more. You can view much of this material on the Nextflow and nf-core YouTube channels.
+The nf-core project is a community effort aggregating high quality Nextflow workflows which can be used by everyone.
+
+
+Contributing
+Contributions are more than welcome. See the Contributing page for details.
+
+
+License
+Nextflow is released under the Apache 2.0 license. Nextflow is a registered trademark.
+
+
+Citations
+If you use Nextflow in your work, please cite:
+P. Di Tommaso, et al. Nextflow enables reproducible computational workflows. Nature Biotechnology 35, 316–319 (2017) doi:10.1038/nbt.3820
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Next 
+
+
+
+© Copyright 2024, Seqera Labs, S.L.
+
+
+  Built with Sphinx using a
+    theme
+    provided by Read the Docs.
+   
+
+
+
+
+
+
+
+
+
+
+

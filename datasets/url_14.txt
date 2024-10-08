@@ -1,0 +1,275 @@
+
+
+
+
+
+Channels — Nextflow documentation
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Version dev (7c4538159) 
+
+Stable
+Edge
+Latest
+
+
+
+
+
+Get started
+
+Overview
+Installation
+Your first script
+
+Running pipelines
+
+Command line
+Configuration
+Executors
+Caching and resuming
+Reports
+Plugins
+
+Developing pipelines
+
+Scripts
+Working with files
+Processes
+Channels
+Channel types
+Queue channel
+Value channel
+
+
+Channel factories
+Operators
+
+
+Workflows
+Modules
+Notifications
+Secrets
+Sharing pipelines
+Migrating from DSL 1
+
+Software dependencies
+
+Git
+Containers
+Conda environments
+Spack environments
+Wave containers
+
+Compute & storage
+
+Amazon Web Services
+Amazon S3
+Azure
+Google Cloud
+Kubernetes
+Fusion file system
+
+Reference
+
+CLI reference
+Configuration options
+Environment variables
+Feature flags
+Standard library
+Process reference
+Channel factories
+Operators
+
+Contributing
+
+Overview
+Workflow Diagram
+Packages
+Plugins
+
+Tutorials
+
+Using Nextflow with Flux
+Understanding task resource metrics
+
+
+
+
+            Nextflow is developed by:
+
+
+
+
+
+
+
+Nextflow
+
+
+
+
+
+
+Channels
+
+ Edit on GitHub
+
+
+
+
+
+
+
+Channels
+Nextflow is based on the dataflow programming model in which processes communicate through channels.
+A channel has two major properties:
+
+Sending a message is an asynchronous (i.e. non-blocking) operation, which means the sender doesn’t have to wait for the receiving process.
+Receiving a message is a synchronous (i.e. blocking) operation, which means the receiving process must wait until a message has arrived.
+
+
+Channel types
+In Nextflow there are two kinds of channels: queue channels and value channels.
+
+Queue channel
+A queue channel is a non-blocking unidirectional FIFO queue connecting a producer process (i.e. outputting a value)
+to a consumer process, or an operators.
+A queue channel can be created by factory methods (of, fromPath, etc), operators (map, flatMap, etc), and processes (see Process outputs).
+
+
+Value channel
+A value channel can be bound (i.e. assigned) with one and only one value, and can be consumed any number of times by
+a process or an operator.
+A value channel can be created with the value factory method or by any operator that produces a single value
+(first, collect, reduce, etc). Additionally, a process will emit value
+channels if it is invoked with all value channels, including simple values which are implicitly wrapped in a value channel.
+For example:
+process foo {
+  input:
+  val x
+
+  output:
+  path 'x.txt'
+
+  """
+  echo $x > x.txt
+  """
+}
+
+workflow {
+  result = foo(1)
+  result.view { "Result: ${it}" }
+}
+
+
+In the above example, since the foo process is invoked with a simple value instead of a channel, the input is implicitly
+wrapped in a value channel, and the output is also emitted as a value channel.
+See also: Multiple input channels.
+
+
+
+Channel factories
+Channel factories are functions that can create channels.
+For example, the Channel.of() factory can be used to create a channel from an arbitrary list of arguments:
+Channel.of(1, 2, 3).view()
+
+
+
+New in version 20.07.0: channel was introduced as an alias of Channel, allowing factory methods to be specified as channel.of() or Channel.of(), and so on.
+
+See Channel factories for the full list of channel factories.
+
+
+Operators
+Operators are methods that consume and produce channels. Because channels are asynchronous, operators are necessary to manipulate the values in a channel, without using a process. As a result, operators are useful for implementing the “glue logic” between processes.
+See Operators for the full list of operators. If you are new to Nextflow, here are some commonly-used operators to learn first:
+Filtering:
+
+filter: select all values in a channel that satisfy a condition
+first: select the first value in a channel
+take: select the first n values in a channel
+unique: select the unique values in a channel (i.e. remove duplicates)
+
+Transforming:
+
+collect: collect the values from a channel into a list
+groupTuple: group the values from a channel based on a grouping key
+map: transform each value from a channel with a mapping function
+reduce: accumulate each value from a channel into a single value
+
+Combining multiple channels:
+
+combine: emit the combinations of two channels
+concat: emit the values from multiple channels (in the order in which the channels were given)
+join: join the values from two channels based on a matching key
+mix: emit the values from multiple channels (in the order in which items arrive)
+
+Miscellaneous:
+
+ifEmpty: emit a channel, or a default value if the channel is empty
+set: assign a channel to a variable
+view: print each value in a channel to standard output
+
+
+
+
+
+
+ Previous
+Next 
+
+
+
+© Copyright 2024, Seqera Labs, S.L.
+
+
+  Built with Sphinx using a
+    theme
+    provided by Read the Docs.
+   
+
+
+
+
+
+
+
+
+
+
+

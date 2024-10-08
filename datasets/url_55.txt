@@ -1,0 +1,570 @@
+
+
+
+
+
+
+
+
+
+
+Process per file range - Nextflow Patterns
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+          Skip to content
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            Nextflow Patterns
+          
+
+
+
+            
+              Process per file range
+            
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            Initializing search
+          
+
+
+
+
+
+
+
+
+
+
+
+
+    nextflow-io/patterns
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    Nextflow Patterns
+  
+
+
+
+
+
+
+    nextflow-io/patterns
+  
+
+
+
+
+
+
+    Home
+  
+
+
+
+
+
+
+    Basic patterns
+  
+
+
+
+
+
+            Basic patterns
+          
+
+
+
+
+    Channel duplication
+  
+
+
+
+
+
+    Sort FilePairs by sample name
+  
+
+
+
+
+
+    Create key to combine channels
+  
+
+
+
+
+
+
+
+
+
+    Scatter executions
+  
+
+
+
+
+
+            Scatter executions
+          
+
+
+
+
+    Process per file path
+  
+
+
+
+
+
+    Process per file chunk
+  
+
+
+
+
+
+    Process per file pairs
+  
+
+
+
+
+
+
+    Process per file range
+  
+
+
+
+
+    Process per file range
+  
+
+
+
+
+      Table of contents
+    
+
+
+
+
+      Problem
+    
+
+
+
+
+
+      Solution
+    
+
+
+
+
+
+      Code
+    
+
+
+
+
+
+      Run it
+    
+
+
+
+
+
+
+
+
+    Process per CSV record
+  
+
+
+
+
+
+    Process per file output
+  
+
+
+
+
+
+
+
+
+
+    Gather results
+  
+
+
+
+
+
+            Gather results
+          
+
+
+
+
+    Process all outputs altogether
+  
+
+
+
+
+
+    Process outputs into groups
+  
+
+
+
+
+
+    Collect outputs into a file
+  
+
+
+
+
+
+
+
+
+
+    Organize outputs
+  
+
+
+
+
+
+            Organize outputs
+          
+
+
+
+
+    Store process outputs
+  
+
+
+
+
+
+    Store outputs matching a glob pattern
+  
+
+
+
+
+
+    Store outputs renaming files
+  
+
+
+
+
+
+
+
+
+
+    Other
+  
+
+
+
+
+
+            Other
+          
+
+
+
+
+    Get process work directory
+  
+
+
+
+
+
+    Ignore failing process
+  
+
+
+
+
+
+    State dependency
+  
+
+
+
+
+
+
+
+
+
+    Advanced patterns
+  
+
+
+
+
+
+            Advanced patterns
+          
+
+
+
+
+    Conditional process resources
+  
+
+
+
+
+
+    Conditional process execution (static)
+  
+
+
+
+
+
+    Conditional process execution (dynamic)
+  
+
+
+
+
+
+    Skip process execution
+  
+
+
+
+
+
+    Feedback loop
+  
+
+
+
+
+
+    Optional input
+  
+
+
+
+
+
+    Optional output
+  
+
+
+
+
+
+    Process when empty
+  
+
+
+
+
+
+    Task batching
+  
+
+
+
+
+
+    Workflow grouping
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      Table of contents
+    
+
+
+
+
+      Problem
+    
+
+
+
+
+
+      Solution
+    
+
+
+
+
+
+      Code
+    
+
+
+
+
+
+      Run it
+    
+
+
+
+
+
+
+
+
+
+Process per file range
+Problem
+You need to execute a task over two or more series of files having a common index range. 
+Solution
+Use the from method to define the range over which to repeat the task execution, then chain it with the map operator to associate each index with the corresponding input files. Finally, use the resulting channel as input for the process.
+Code
+process foo {
+  debug true
+  tag "$sampleId"
+
+  input: 
+  tuple val(sampleId), file(indels), file(snps)
+
+  """
+  echo foo_command --this $indels --that $snps
+  """
+}
+
+workflow {
+  Channel.from(1..23) \
+    | map { chr -> ["sample${chr}", file("/some/path/foo.${chr}.indels.vcf"), file("/other/path/foo.snvs.${chr}.vcf")] } \
+    | foo
+}
+
+Run it
+nextflow run nextflow-io/patterns/process-per-file-range.nf
+
+
+
+
+
+
+
+
+
+  
+  
+    Made with
+    
+      Material for MkDocs
+    
+
+
+
+
+
+
+
+
+
+
+

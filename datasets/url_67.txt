@@ -1,0 +1,574 @@
+
+
+
+
+
+
+
+
+
+
+Conditional process resources - Nextflow Patterns
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+          Skip to content
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            Nextflow Patterns
+          
+
+
+
+            
+              Conditional process resources
+            
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            Initializing search
+          
+
+
+
+
+
+
+
+
+
+
+
+
+    nextflow-io/patterns
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    Nextflow Patterns
+  
+
+
+
+
+
+
+    nextflow-io/patterns
+  
+
+
+
+
+
+
+    Home
+  
+
+
+
+
+
+
+    Basic patterns
+  
+
+
+
+
+
+            Basic patterns
+          
+
+
+
+
+    Channel duplication
+  
+
+
+
+
+
+    Sort FilePairs by sample name
+  
+
+
+
+
+
+    Create key to combine channels
+  
+
+
+
+
+
+
+
+
+
+    Scatter executions
+  
+
+
+
+
+
+            Scatter executions
+          
+
+
+
+
+    Process per file path
+  
+
+
+
+
+
+    Process per file chunk
+  
+
+
+
+
+
+    Process per file pairs
+  
+
+
+
+
+
+    Process per file range
+  
+
+
+
+
+
+    Process per CSV record
+  
+
+
+
+
+
+    Process per file output
+  
+
+
+
+
+
+
+
+
+
+    Gather results
+  
+
+
+
+
+
+            Gather results
+          
+
+
+
+
+    Process all outputs altogether
+  
+
+
+
+
+
+    Process outputs into groups
+  
+
+
+
+
+
+    Collect outputs into a file
+  
+
+
+
+
+
+
+
+
+
+    Organize outputs
+  
+
+
+
+
+
+            Organize outputs
+          
+
+
+
+
+    Store process outputs
+  
+
+
+
+
+
+    Store outputs matching a glob pattern
+  
+
+
+
+
+
+    Store outputs renaming files
+  
+
+
+
+
+
+
+
+
+
+    Other
+  
+
+
+
+
+
+            Other
+          
+
+
+
+
+    Get process work directory
+  
+
+
+
+
+
+    Ignore failing process
+  
+
+
+
+
+
+    State dependency
+  
+
+
+
+
+
+
+
+
+
+    Advanced patterns
+  
+
+
+
+
+
+            Advanced patterns
+          
+
+
+
+
+
+    Conditional process resources
+  
+
+
+
+
+    Conditional process resources
+  
+
+
+
+
+      Table of contents
+    
+
+
+
+
+      Problem
+    
+
+
+
+
+
+      Solution
+    
+
+
+
+
+
+      Code
+    
+
+
+
+
+
+      Run it
+    
+
+
+
+
+
+
+
+
+    Conditional process execution (static)
+  
+
+
+
+
+
+    Conditional process execution (dynamic)
+  
+
+
+
+
+
+    Skip process execution
+  
+
+
+
+
+
+    Feedback loop
+  
+
+
+
+
+
+    Optional input
+  
+
+
+
+
+
+    Optional output
+  
+
+
+
+
+
+    Process when empty
+  
+
+
+
+
+
+    Task batching
+  
+
+
+
+
+
+    Workflow grouping
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      Table of contents
+    
+
+
+
+
+      Problem
+    
+
+
+
+
+
+      Solution
+    
+
+
+
+
+
+      Code
+    
+
+
+
+
+
+      Run it
+    
+
+
+
+
+
+
+
+
+
+Conditional process resources
+Problem
+A task in your workflow needs to use some amount of computing 
+resources (e.g. memory) that depends on the size or the name of one 
+or more input files. 
+Solution
+Declare the resource requirements (memory, cpus, etc.)
+in a dynamic manner using a closure. 
+The closure computes the required amount of resources using the file 
+attributes (e.g. size) of the inputs declared in the process
+definition.
+Code
+process foo {
+    memory { reads.size() < 70.KB ? 1.GB : 5.GB }
+
+    input:
+    path reads
+
+    """
+    echo your_command_here --in ${reads} --mem=${task.memory.giga}
+    """
+}
+
+workflow {
+    Channel.fromPath("$baseDir/data/reads/*_1.fq.gz", checkIfExists:true) \
+        | foo
+}
+
+Run it
+nextflow run nextflow-io/patterns/conditional-resources.nf
+
+
+
+
+
+
+
+
+
+  
+  
+    Made with
+    
+      Material for MkDocs
+    
+
+
+
+
+
+
+
+
+
+
+

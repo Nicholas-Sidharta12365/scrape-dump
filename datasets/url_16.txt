@@ -1,0 +1,419 @@
+
+
+
+
+
+Modules — Nextflow documentation
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Version dev (7c4538159) 
+
+Stable
+Edge
+Latest
+
+
+
+
+
+Get started
+
+Overview
+Installation
+Your first script
+
+Running pipelines
+
+Command line
+Configuration
+Executors
+Caching and resuming
+Reports
+Plugins
+
+Developing pipelines
+
+Scripts
+Working with files
+Processes
+Channels
+Workflows
+Modules
+Module inclusion
+Module directory
+Multiple inclusions
+Module aliases
+Module parameters
+Module templates
+Module binaries
+Sharing modules
+
+
+Notifications
+Secrets
+Sharing pipelines
+Migrating from DSL 1
+
+Software dependencies
+
+Git
+Containers
+Conda environments
+Spack environments
+Wave containers
+
+Compute & storage
+
+Amazon Web Services
+Amazon S3
+Azure
+Google Cloud
+Kubernetes
+Fusion file system
+
+Reference
+
+CLI reference
+Configuration options
+Environment variables
+Feature flags
+Standard library
+Process reference
+Channel factories
+Operators
+
+Contributing
+
+Overview
+Workflow Diagram
+Packages
+Plugins
+
+Tutorials
+
+Using Nextflow with Flux
+Understanding task resource metrics
+
+
+
+
+            Nextflow is developed by:
+
+
+
+
+
+
+
+Nextflow
+
+
+
+
+
+
+Modules
+
+ Edit on GitHub
+
+
+
+
+
+
+
+Modules
+In Nextflow, a module is a script that may contain functions, processes, and workflows (collectively referred to as components). A module can be included in other modules or pipeline scripts and even shared across workflows.
+
+Note
+Modules were introduced in DSL2. If you are still using DSL1, see the Migrating from DSL 1 page to learn how to migrate your Nextflow pipelines to DSL2.
+
+
+Module inclusion
+A component defined in a module script can be imported into another Nextflow script using the include keyword.
+For example:
+include { foo } from './some/module'
+
+workflow {
+    data = channel.fromPath('/some/data/*.txt')
+    foo(data)
+}
+
+
+The above snippet imports a process named foo, defined in the module script, into the main execution context. This way, foo can be invoked in the workflow scope.
+Nextflow implicitly looks for the script file ./some/module.nf, resolving the path against the including script location.
+Module includes are subject to the following rules:
+
+Relative paths must begin with the ./ prefix.
+Include statements are not allowed from within a workflow. They must occur at the script level.
+
+
+
+Module directory
+
+New in version 22.10.0.
+
+A module can be defined as a directory with the same name as the module and with a script named main.nf. For example:
+some
+└── module
+    └── main.nf
+
+
+When defined as a directory, the module must be included by specifying the module directory path:
+include { foo } from './some/module'
+
+
+Module directories allow the use of module scoped binaries scripts. See [Module binaries] for details.
+
+
+Multiple inclusions
+A Nextflow script can include any number of modules, and an include statement can import any number of components from a module. Multiple components can be included from the same module by using the syntax shown below:
+include { foo; bar } from './some/module'
+
+workflow {
+    data = channel.fromPath('/some/data/*.txt')
+    foo(data)
+    bar(data)
+}
+
+
+
+
+Module aliases
+When including a module component, it’s possible to specify an alias with the as keyword. Aliasing allows you to avoid module name clashes, by assigning them different names in the including context. For example:
+include { foo } from './some/module'
+include { foo as bar } from './other/module'
+
+workflow {
+    foo(some_data)
+    bar(other_data)
+}
+
+
+You can even include the same component multiple times under different names:
+include { foo; foo as bar } from './some/module'
+
+workflow {
+    foo(some_data)
+    bar(other_data)
+}
+
+
+
+
+Module parameters
+
+Deprecated since version 24.07.0-edge: As a best practice, parameters should be used in the entry workflow and passed to functions / processes / workflows as explicit inputs.
+
+A module script can define parameters using the same syntax as a Nextflow workflow script:
+params.foo = 'Hello'
+params.bar = 'world!'
+
+def sayHello() {
+    println "$params.foo $params.bar"
+}
+
+
+When including a module, the module will first use parameters from the including context. For example:
+params.foo = 'Hola'
+params.bar = 'Mundo'
+
+include { sayHello } from './some/module'
+
+workflow {
+    sayHello()
+}
+
+
+The above snippet prints:
+Hola Mundo
+
+
+
+Note
+The module inherits the parameters defined before the include statement, therefore any parameters set afterwards will not be used by the module.
+
+
+Tip
+It is best to define all pipeline parameters before any include statements.
+
+The addParams option can be used to pass parameters to the module without adding them to the including scope.
+params.foo = 'Hola'
+params.bar = 'Mundo'
+
+include { sayHello } from './some/module' addParams(foo: 'Ciao')
+
+workflow {
+    sayHello()
+}
+
+
+The above snippet prints:
+Ciao Mundo
+
+
+Alternatively, the params option can be used to pass parameters to module without adding them to the including scope, and without inheriting any parameters from the including scope.
+params.foo = 'Hola'
+params.bar = 'Mundo'
+
+include { sayHello } from './some/module' params(foo: 'Ciao')
+
+workflow {
+    sayHello()
+}
+
+
+The above snippet prints:
+Ciao world!
+
+
+
+
+Module templates
+The module script can be defined in an external template file. The template file can be placed in the templates directory where the module script is located.
+For example, suppose we have a project L with a module script that defines two processes, P1 and P2, both of which use templates. The template files can be made available in the local templates directory:
+Project L
+|── myModules.nf
+└── templates
+    |── P1-template.sh
+    └── P2-template.sh
+
+
+Then, we have a second project A with a workflow that includes P1 and P2:
+Pipeline A
+└── main.nf
+
+
+Finally, we have a third project B with a workflow that also includes P1 and P2:
+Pipeline B
+└── main.nf
+
+
+With the possibility to keep the template files inside the project L, A and B can use the modules defined in L without any changes. A future project C would do the same, just cloning L (if not available on the system) and including its module script.
+Beside promoting the sharing of modules across pipelines, there are several advantages to keeping the module template under the script path:
+
+module components are self-contained,
+module components can be tested independently from the pipeline(s) that import them,
+it is possible to create libraries of module components.
+
+Ultimately, having multiple template locations allows a more structured organization within the same project. If a project has several module components, and all of them use templates, the project could group module scripts and their templates as needed. For example:
+baseDir
+|── main.nf
+|── Phase0-Modules
+    |── mymodules1.nf
+    |── mymodules2.nf
+    └── templates
+        |── P1-template.sh
+        |── P2-template.sh
+|── Phase1-Modules
+    |── mymodules3.nf
+    |── mymodules4.nf
+    └── templates
+        |── P3-template.sh
+        └── P4-template.sh
+└── Phase2-Modules
+    |── mymodules5.nf
+    |── mymodules6.nf
+    └── templates
+        |── P5-template.sh
+        |── P6-template.sh
+        └── P7-template.sh
+
+
+
+
+Module binaries
+
+New in version 22.10.0.
+
+Modules can define binary scripts that are locally scoped to the processes defined by the tasks.
+To enable this feature, enable the following flag in your pipeline configuration file:
+nextflow.enable.moduleBinaries = true
+
+
+The binary scripts must be placed in the module directory names <module-dir>/resources/usr/bin:
+<module-dir>
+|── main.nf
+└── resources
+    └── usr
+        └── bin
+            |── your-module-script1.sh
+            └── another-module-script2.py
+
+
+Those scripts will be made accessible like any other command in the task environment, provided they have been granted the Linux execute permissions.
+
+Note
+This feature requires the use of a local or shared file system for the pipeline work directory, or Wave containers when using cloud-based executors.
+
+
+
+Sharing modules
+Modules are designed to be easy to share and re-use across different pipelines, which helps eliminate duplicate work and spread improvements throughout the community. While Nextflow does not provide an explicit mechanism for sharing modules, there are several ways to do it:
+
+Simply copy the module files into your pipeline repository
+Use Git submodules to fetch modules from other Git repositories without maintaining a separate copy
+Use the nf-core CLI to install and update modules with a standard approach used by the nf-core community
+
+
+
+
+
+
+ Previous
+Next 
+
+
+
+© Copyright 2024, Seqera Labs, S.L.
+
+
+  Built with Sphinx using a
+    theme
+    provided by Read the Docs.
+   
+
+
+
+
+
+
+
+
+
+
+

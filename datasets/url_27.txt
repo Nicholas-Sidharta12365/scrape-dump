@@ -1,0 +1,268 @@
+
+
+
+
+
+Amazon S3 — Nextflow documentation
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Version dev (7c4538159) 
+
+Stable
+Edge
+Latest
+
+
+
+
+
+Get started
+
+Overview
+Installation
+Your first script
+
+Running pipelines
+
+Command line
+Configuration
+Executors
+Caching and resuming
+Reports
+Plugins
+
+Developing pipelines
+
+Scripts
+Working with files
+Processes
+Channels
+Workflows
+Modules
+Notifications
+Secrets
+Sharing pipelines
+Migrating from DSL 1
+
+Software dependencies
+
+Git
+Containers
+Conda environments
+Spack environments
+Wave containers
+
+Compute & storage
+
+Amazon Web Services
+Amazon S3
+S3 path
+Security credentials
+AWS access and secret keys
+IAM roles with AWS EC2 instances
+
+
+China regions
+S3-compatible storage
+Advanced configuration
+
+
+Azure
+Google Cloud
+Kubernetes
+Fusion file system
+
+Reference
+
+CLI reference
+Configuration options
+Environment variables
+Feature flags
+Standard library
+Process reference
+Channel factories
+Operators
+
+Contributing
+
+Overview
+Workflow Diagram
+Packages
+Plugins
+
+Tutorials
+
+Using Nextflow with Flux
+Understanding task resource metrics
+
+
+
+
+            Nextflow is developed by:
+
+
+
+
+
+
+
+Nextflow
+
+
+
+
+
+
+Amazon S3
+
+ Edit on GitHub
+
+
+
+
+
+
+
+Amazon S3
+Nextflow includes support for AWS S3 storage. Files stored in an S3 bucket can be accessed transparently in your pipeline script like any other file in the local file system.
+
+S3 path
+In order to access an S3 file, you only need to prefix the file path with the s3 schema and the bucket name where it is stored.
+For example, if you need to access the file /data/sequences.fa stored in a bucket named my-bucket, that file can be accessed using the following fully qualified path:
+s3://my-bucket/data/sequences.fa
+
+
+The usual file operations can be applied to a path handle with the above notation. For example, the content of an S3 file can be printed as follows:
+println file('s3://my-bucket/data/sequences.fa').text
+
+
+See Working with files and the Path reference to learn more about available file operations.
+
+
+Security credentials
+AWS access credentials can be provided in two ways:
+
+Using AWS access and secret keys in your pipeline configuration.
+Using IAM roles to grant access to S3 storage on AWS EC2 instances.
+
+
+AWS access and secret keys
+The AWS access and secret keys can be specified by using the aws section in the nextflow.config configuration file as shown below:
+aws {
+    accessKey = '<Your AWS access key>'
+    secretKey = '<Your AWS secret key>'
+    region = '<AWS region identifier>'
+}
+
+
+If the access credentials are not found in the above file, Nextflow looks for AWS credentials in the following order:
+
+The nextflow.config file in the pipeline execution directory
+The environment variables AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY
+The environment variables AWS_ACCESS_KEY and AWS_SECRET_KEY
+The default profile in the AWS credentials file located at ~/.aws/credentials
+The default profile in the AWS client configuration file located at ~/.aws/config
+The temporary AWS credentials provided by an IAM instance role. See IAM Roles documentation for details.
+
+More information regarding AWS Security Credentials are available in the AWS documentation.
+
+
+IAM roles with AWS EC2 instances
+When running your pipeline in an EC2 instance, IAM roles can be used to grant access to AWS resources.
+In this scenario, you only need to launch the EC2 instance with an IAM role which includes the AmazonS3FullAccess policy. Nextflow will detect and automatically acquire the permission to access S3 storage, without any further configuration.
+Learn more about Using IAM Roles to Delegate Permissions to Applications that Run on AWS EC2 in the AWS documentation.
+
+
+
+China regions
+To use an AWS China region, make sure to specify the corresponding AWS API S3 endpoint in the Nextflow configuration file as shown below:
+aws { 
+    client {
+        endpoint = "https://s3.cn-north-1.amazonaws.com.cn"        
+    }
+}
+
+
+Read more about AWS API endpoints in the AWS documentation
+
+
+S3-compatible storage
+To use S3-compatible object storage such as Ceph or Minio specify the endpoint of
+your storage provider and enable the S3 path style access
+in your Nextflow configuration as shown below:
+aws {
+    accessKey = '<Your access key>'
+    secretKey = '<Your secret key>'
+    client {
+        endpoint = '<Your storage endpoint URL>'
+        s3PathStyleAccess = true
+    }
+}
+
+
+
+
+Advanced configuration
+Read AWS configuration section to learn more about advanced S3 client configuration options.
+
+
+
+
+
+ Previous
+Next 
+
+
+
+© Copyright 2024, Seqera Labs, S.L.
+
+
+  Built with Sphinx using a
+    theme
+    provided by Read the Docs.
+   
+
+
+
+
+
+
+
+
+
+
+

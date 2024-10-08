@@ -1,0 +1,260 @@
+
+
+
+
+
+Secrets — Nextflow documentation
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Version dev (7c4538159) 
+
+Stable
+Edge
+Latest
+
+
+
+
+
+Get started
+
+Overview
+Installation
+Your first script
+
+Running pipelines
+
+Command line
+Configuration
+Executors
+Caching and resuming
+Reports
+Plugins
+
+Developing pipelines
+
+Scripts
+Working with files
+Processes
+Channels
+Workflows
+Modules
+Notifications
+Secrets
+How it works
+Command line
+Configuration file
+Process directive
+Pipeline script
+
+
+Sharing pipelines
+Migrating from DSL 1
+
+Software dependencies
+
+Git
+Containers
+Conda environments
+Spack environments
+Wave containers
+
+Compute & storage
+
+Amazon Web Services
+Amazon S3
+Azure
+Google Cloud
+Kubernetes
+Fusion file system
+
+Reference
+
+CLI reference
+Configuration options
+Environment variables
+Feature flags
+Standard library
+Process reference
+Channel factories
+Operators
+
+Contributing
+
+Overview
+Workflow Diagram
+Packages
+Plugins
+
+Tutorials
+
+Using Nextflow with Flux
+Understanding task resource metrics
+
+
+
+
+            Nextflow is developed by:
+
+
+
+
+
+
+
+Nextflow
+
+
+
+
+
+
+Secrets
+
+ Edit on GitHub
+
+
+
+
+
+
+
+Secrets
+
+New in version 22.10.0: Previewed in 21.09.0-edge.
+
+Nextflow has built-in support for pipeline secrets to allow users to safely provide sensitive information to a pipeline execution.
+
+How it works
+This feature allows decoupling the use secrets in your pipelines from the pipeline code and configuration files. Secrets are instead managed by Nextflow and store separately into a local store only accessible to the secrets owner.
+When the pipeline execution is launched Nextflow inject the secrets in pipeline jobs without leaking them into temporary execution files. The secrets are accessible into the job command via environment variables.
+
+
+Command line
+Nextflow provides a command named secrets. This command allows four simple operations:
+
+listList secrets available in the current store e.g. nextflow secrets list.
+
+getRetrieve a secret value e.g. nextflow secrets get FOO.
+
+setCreate or update a secret e.g. nextflow secrets set FOO "Hello world"
+
+deleteDelete a secret e.g. nextflow secrets delete FOO.
+
+
+
+
+Configuration file
+Once create the secrets can be used in the pipeline configuration file as implicit variables using the secrets scope:
+aws {
+  accessKey = secrets.MY_ACCESS_KEY
+  secretKey = secrets.MY_SECRET_KEY
+}
+
+
+The above snippet access the secrets MY_ACCESS_KEY and MY_SECRET_KEY previously and assign them to the corresponding AWS credentials settings.
+
+Warning
+Secrets cannot be assigned to pipeline parameters.
+
+
+
+Process directive
+Secrets can be access by pipeline processes by using the secret directive. For example:
+process someJob {
+    secret 'MY_ACCESS_KEY'
+    secret 'MY_SECRET_KEY'
+
+    """
+    your_command --access \$MY_ACCESS_KEY --secret \$MY_SECRET_KEY
+    """
+}
+
+
+The above snippet runs a command in with the variables MY_ACCESS_KEY and MY_SECRET_KEY are injected in the process execution environment holding the values defines in the secret store.
+
+Warning
+The secrets are made available in the process context running the command script as environment variables. Therefore make sure to escape the variable name identifier with a backslash as shown in the example above, otherwise a variable with the same will be evaluated in the Nextflow script context instead of the command script.
+
+
+Note
+This feature is only available when using the local or grid executors (Slurm, Grid Engine, etc). The AWS Batch executor allows the use of secrets when deploying the pipeline execution via Seqera Platform.
+
+
+
+Pipeline script
+
+New in version 24.03.0-edge.
+
+Secrets can be accessed in the pipeline script using the secrets variable. For example:
+workflow.onComplete {
+    println("The secret is: ${secrets.MY_SECRET}")
+}
+
+
+
+Note
+This feature is only available when using the local or grid executors (Slurm, Grid Engine, etc). The AWS Batch executor allows the use of secrets when deploying the pipeline execution via Seqera Platform.
+
+
+
+
+
+
+ Previous
+Next 
+
+
+
+© Copyright 2024, Seqera Labs, S.L.
+
+
+  Built with Sphinx using a
+    theme
+    provided by Read the Docs.
+   
+
+
+
+
+
+
+
+
+
+
+

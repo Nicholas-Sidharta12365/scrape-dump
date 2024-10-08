@@ -1,0 +1,582 @@
+
+
+
+
+
+
+
+
+
+
+Optional input - Nextflow Patterns
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+          Skip to content
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            Nextflow Patterns
+          
+
+
+
+            
+              Optional input
+            
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            Initializing search
+          
+
+
+
+
+
+
+
+
+
+
+
+
+    nextflow-io/patterns
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    Nextflow Patterns
+  
+
+
+
+
+
+
+    nextflow-io/patterns
+  
+
+
+
+
+
+
+    Home
+  
+
+
+
+
+
+
+    Basic patterns
+  
+
+
+
+
+
+            Basic patterns
+          
+
+
+
+
+    Channel duplication
+  
+
+
+
+
+
+    Sort FilePairs by sample name
+  
+
+
+
+
+
+    Create key to combine channels
+  
+
+
+
+
+
+
+
+
+
+    Scatter executions
+  
+
+
+
+
+
+            Scatter executions
+          
+
+
+
+
+    Process per file path
+  
+
+
+
+
+
+    Process per file chunk
+  
+
+
+
+
+
+    Process per file pairs
+  
+
+
+
+
+
+    Process per file range
+  
+
+
+
+
+
+    Process per CSV record
+  
+
+
+
+
+
+    Process per file output
+  
+
+
+
+
+
+
+
+
+
+    Gather results
+  
+
+
+
+
+
+            Gather results
+          
+
+
+
+
+    Process all outputs altogether
+  
+
+
+
+
+
+    Process outputs into groups
+  
+
+
+
+
+
+    Collect outputs into a file
+  
+
+
+
+
+
+
+
+
+
+    Organize outputs
+  
+
+
+
+
+
+            Organize outputs
+          
+
+
+
+
+    Store process outputs
+  
+
+
+
+
+
+    Store outputs matching a glob pattern
+  
+
+
+
+
+
+    Store outputs renaming files
+  
+
+
+
+
+
+
+
+
+
+    Other
+  
+
+
+
+
+
+            Other
+          
+
+
+
+
+    Get process work directory
+  
+
+
+
+
+
+    Ignore failing process
+  
+
+
+
+
+
+    State dependency
+  
+
+
+
+
+
+
+
+
+
+    Advanced patterns
+  
+
+
+
+
+
+            Advanced patterns
+          
+
+
+
+
+    Conditional process resources
+  
+
+
+
+
+
+    Conditional process execution (static)
+  
+
+
+
+
+
+    Conditional process execution (dynamic)
+  
+
+
+
+
+
+    Skip process execution
+  
+
+
+
+
+
+    Feedback loop
+  
+
+
+
+
+
+
+    Optional input
+  
+
+
+
+
+    Optional input
+  
+
+
+
+
+      Table of contents
+    
+
+
+
+
+      Problem
+    
+
+
+
+
+
+      Solution
+    
+
+
+
+
+
+      Code
+    
+
+
+
+
+
+      Run it
+    
+
+
+
+
+
+
+
+
+    Optional output
+  
+
+
+
+
+
+    Process when empty
+  
+
+
+
+
+
+    Task batching
+  
+
+
+
+
+
+    Workflow grouping
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      Table of contents
+    
+
+
+
+
+      Problem
+    
+
+
+
+
+
+      Solution
+    
+
+
+
+
+
+      Code
+    
+
+
+
+
+
+      Run it
+    
+
+
+
+
+
+
+
+
+
+Optional input
+Problem
+One or more processes have an optional input file. 
+Solution
+Use a special file name to mark the absence of the file parameter.
+Create an empty file in assets:
+touch assets/NO_FILE
+
+Code
+params.inputs = "$projectDir/data/prots/*{1,2,3}.fa"
+params.filter = "$projectDir/assets/NO_FILE"
+
+process foo {
+  debug true
+  input:
+  path seq
+  path opt
+
+  script:
+  def filter = opt.name != 'NO_FILE' ? "--filter $opt" : ''
+  """
+  echo your_command --input $seq $filter
+  """
+}
+
+workflow {
+  prots_ch = Channel.fromPath(params.inputs, checkIfExists:true)
+  opt_file = file(params.filter, checkIfExists:true)
+
+  foo(prots_ch, opt_file)
+}
+
+Run it
+Run the script with the following command: 
+nextflow run nextflow-io/patterns/optional-input.nf 
+
+Run the same script providing an optional file input:
+nextflow run nextflow-io/patterns/optional-input.nf --filter foo.txt
+
+
+
+
+
+
+
+
+
+  
+  
+    Made with
+    
+      Material for MkDocs
+    
+
+
+
+
+
+
+
+
+
+
+

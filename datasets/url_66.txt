@@ -1,0 +1,579 @@
+
+
+
+
+
+
+
+
+
+
+State dependency - Nextflow Patterns
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+          Skip to content
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            Nextflow Patterns
+          
+
+
+
+            
+              State dependency
+            
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            Initializing search
+          
+
+
+
+
+
+
+
+
+
+
+
+
+    nextflow-io/patterns
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    Nextflow Patterns
+  
+
+
+
+
+
+
+    nextflow-io/patterns
+  
+
+
+
+
+
+
+    Home
+  
+
+
+
+
+
+
+    Basic patterns
+  
+
+
+
+
+
+            Basic patterns
+          
+
+
+
+
+    Channel duplication
+  
+
+
+
+
+
+    Sort FilePairs by sample name
+  
+
+
+
+
+
+    Create key to combine channels
+  
+
+
+
+
+
+
+
+
+
+    Scatter executions
+  
+
+
+
+
+
+            Scatter executions
+          
+
+
+
+
+    Process per file path
+  
+
+
+
+
+
+    Process per file chunk
+  
+
+
+
+
+
+    Process per file pairs
+  
+
+
+
+
+
+    Process per file range
+  
+
+
+
+
+
+    Process per CSV record
+  
+
+
+
+
+
+    Process per file output
+  
+
+
+
+
+
+
+
+
+
+    Gather results
+  
+
+
+
+
+
+            Gather results
+          
+
+
+
+
+    Process all outputs altogether
+  
+
+
+
+
+
+    Process outputs into groups
+  
+
+
+
+
+
+    Collect outputs into a file
+  
+
+
+
+
+
+
+
+
+
+    Organize outputs
+  
+
+
+
+
+
+            Organize outputs
+          
+
+
+
+
+    Store process outputs
+  
+
+
+
+
+
+    Store outputs matching a glob pattern
+  
+
+
+
+
+
+    Store outputs renaming files
+  
+
+
+
+
+
+
+
+
+
+    Other
+  
+
+
+
+
+
+            Other
+          
+
+
+
+
+    Get process work directory
+  
+
+
+
+
+
+    Ignore failing process
+  
+
+
+
+
+
+
+    State dependency
+  
+
+
+
+
+    State dependency
+  
+
+
+
+
+      Table of contents
+    
+
+
+
+
+      Problem
+    
+
+
+
+
+
+      Solution
+    
+
+
+
+
+
+      Code
+    
+
+
+
+
+
+      Run it
+    
+
+
+
+
+
+
+
+
+
+
+
+
+    Advanced patterns
+  
+
+
+
+
+
+            Advanced patterns
+          
+
+
+
+
+    Conditional process resources
+  
+
+
+
+
+
+    Conditional process execution (static)
+  
+
+
+
+
+
+    Conditional process execution (dynamic)
+  
+
+
+
+
+
+    Skip process execution
+  
+
+
+
+
+
+    Feedback loop
+  
+
+
+
+
+
+    Optional input
+  
+
+
+
+
+
+    Optional output
+  
+
+
+
+
+
+    Process when empty
+  
+
+
+
+
+
+    Task batching
+  
+
+
+
+
+
+    Workflow grouping
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      Table of contents
+    
+
+
+
+
+      Problem
+    
+
+
+
+
+
+      Solution
+    
+
+
+
+
+
+      Code
+    
+
+
+
+
+
+      Run it
+    
+
+
+
+
+
+
+
+
+
+State dependency
+Problem
+You need to synchronize the execution of two processes for which there isn't a data dependency, so that process bar is executed after the completion of process foo.  
+Solution
+Add an output channel to process foo that produces a ready signal. Then pass this channel as input to process bar in order to trigger its execution when foo completes.
+Code
+process foo {
+    output: 
+    val true
+    script:
+    """
+    echo your_command_here
+    """
+}
+
+process bar {
+    input: 
+    val ready
+    path fq
+    script:
+    """
+    echo other_command_here --reads $fq
+    """
+}
+
+workflow {
+    reads_ch = Channel.fromPath("$baseDir/data/reads/11010*.fq.gz", checkIfExists:true)
+
+    foo()
+    bar(foo.out, reads_ch)
+}
+
+Run it
+Run the example using this command:
+nextflow run nextflow-io/patterns/state-dependency.nf
+
+
+
+
+
+
+
+
+
+  
+  
+    Made with
+    
+      Material for MkDocs
+    
+
+
+
+
+
+
+
+
+
+
+

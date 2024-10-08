@@ -1,0 +1,399 @@
+
+
+
+
+
+Git — Nextflow documentation
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Version dev (7c4538159) 
+
+Stable
+Edge
+Latest
+
+
+
+
+
+Get started
+
+Overview
+Installation
+Your first script
+
+Running pipelines
+
+Command line
+Configuration
+Executors
+Caching and resuming
+Reports
+Plugins
+
+Developing pipelines
+
+Scripts
+Working with files
+Processes
+Channels
+Workflows
+Modules
+Notifications
+Secrets
+Sharing pipelines
+Migrating from DSL 1
+
+Software dependencies
+
+Git
+Git configuration
+Git providers
+BitBucket
+BitBucket Server
+GitHub
+GitLab
+Gitea
+Azure Repos
+AWS CodeCommit
+
+
+Private server configuration
+
+
+Containers
+Conda environments
+Spack environments
+Wave containers
+
+Compute & storage
+
+Amazon Web Services
+Amazon S3
+Azure
+Google Cloud
+Kubernetes
+Fusion file system
+
+Reference
+
+CLI reference
+Configuration options
+Environment variables
+Feature flags
+Standard library
+Process reference
+Channel factories
+Operators
+
+Contributing
+
+Overview
+Workflow Diagram
+Packages
+Plugins
+
+Tutorials
+
+Using Nextflow with Flux
+Understanding task resource metrics
+
+
+
+
+            Nextflow is developed by:
+
+
+
+
+
+
+
+Nextflow
+
+
+
+
+
+
+Git
+
+ Edit on GitHub
+
+
+
+
+
+
+
+Git
+
+Git configuration
+The file $HOME/.nextflow/scm allows you to centralise the security credentials required to access private project repositories on Bitbucket, GitHub and GitLab source code management (SCM) platforms or to manage the configuration properties of private server installations (of the same platforms).
+The configuration properties for each Git provider are defined inside the providers section. Properties for the same provider are grouped with a common name and delimited with curly brackets. For example:
+providers {
+    <provider-name> {
+        property = value
+        // ...
+    }
+}
+
+
+In the above template replace <provider-name> with one of the “default” servers (i.e. bitbucket, github or gitlab) or a custom identifier representing a private SCM server installation.
+
+New in version 20.10.0: A custom location for the SCM file can be specified using the NXF_SCM_FILE environment variable.
+
+The following configuration properties are supported for each provider configuration:
+
+providers.<provider>.userUser name required to access private repositories on the SCM server.
+
+providers.<provider>.passwordUser password required to access private repositories on the SCM server.
+
+providers.<provider>.tokenRequired only for private Gitlab servers
+
+Private API access token.
+
+providers.<provider>.platformRequired only for private SCM servers
+
+Git provider name, either: github, gitlab or bitbucket.
+
+providers.<provider>.serverRequired only for private SCM servers
+
+SCM server name including the protocol prefix e.g. https://github.com.
+
+providers.<provider>.endpointRequired only for private SCM servers
+
+SCM API endpoint URL e.g. https://api.github.com (default: the same as providers.<provider>.server).
+
+
+
+
+Git providers
+
+BitBucket
+Create a bitbucket entry in the SCM configuration file specifying your user name and app password, as shown below:
+providers {
+    bitbucket {
+        user = 'me'
+        password = 'my-secret'
+    }
+}
+
+
+
+Note
+App passwords are substitute passwords for a user account which you can use for scripts and integrating tools in order to avoid putting your real password into configuration files. Learn more at this link.
+
+
+
+BitBucket Server
+BitBucket Server is a self-hosted Git repository and management platform.
+
+Note
+BitBucket Server uses a different API from the BitBucket Cloud service. Make sure to use the right configuration whether you are using the cloud service or a self-hosted installation.
+
+To access your local BitBucket Server create an entry in the SCM configuration file specifying as shown below:
+providers {
+    mybitbucket {
+        platform = 'bitbucketserver'
+        server = 'https://your.bitbucket.host.com'
+        endpoint = 'https://your.bitbucket.host.com'
+        user = 'your-user'
+        password = 'your-password or your-token'
+    }
+}
+
+
+
+
+GitHub
+Create a github entry in the SCM configuration file specifying your user name and access token as shown below:
+providers {
+    github {
+        user = 'your-user-name'
+        password = 'your-personal-access-token'
+    }
+}
+
+
+GitHub requires the use of a personal access token (PAT) in place of a password when accessing APIs. Learn more about PAT and how to create it at this link.
+
+New in version 23.01.0-edge: Nextflow automatically uses the GITHUB_TOKEN environment variable to authenticate access to the GitHub repository if no credentials are provided via the scm file. This is useful especially when accessing pipeline code from a GitHub Action. Read more about the token authentication in the GitHub documentation.
+
+
+
+GitLab
+Create a gitlab entry in the SCM configuration file specifying the user name, password and your API access token that can be found in your GitLab account page (sign in required). For example:
+providers {
+    gitlab {
+        user = 'me'
+        password = 'my-secret'
+        token = 'YgpR8m7viH_ZYnC8YSe8'
+    }
+}
+
+
+
+Tip
+The GitLab token string can be used as the password value in the above setting. When doing that the token field can be omitted.
+
+
+
+Gitea
+Gitea is a Git repository server with GitHub-like GUI access. Since Gitea installation is quite easy, it is suitable for building a private development environment in your network. To access your Gitea server, you have to provide all the credential information below:
+providers {
+    mygitea {
+        server = 'http://your-domain.org/gitea'
+        endpoint = 'http://your-domain.org/gitea/api/v1'
+        platform = 'gitea'
+        user = 'your-user'
+        password = 'your-password'
+        token = 'your-api-token'
+    }
+}
+
+
+See Gitea documentation about how to enable API access on your server and how to issue a token.
+
+
+Azure Repos
+Nextflow has builtin support for Azure Repos, a Git source code management service hosted in the Azure cloud. To access your Azure Repos with Nextflow provide the repository credentials using the configuration snippet shown below:
+providers {
+    azurerepos {
+        user = 'your-user-name'
+        password = 'your-personal-access-token'
+    }
+}
+
+
+
+Tip
+The Personal access token can be generated in the repository Clone Repository dialog.
+
+
+
+AWS CodeCommit
+
+New in version 22.06.0-edge.
+
+Nextflow supports AWS CodeCommit as a Git provider to access and to share pipelines code.
+To access your project hosted on AWS CodeCommit with Nextflow provide the repository credentials using the configuration snippet shown below:
+providers {
+    my_aws_repo {
+        platform = 'codecommit'
+        user = '<AWS ACCESS KEY>'
+        password = '<AWS SECRET KEY>'
+    }
+}
+
+
+In the above snippet replace <AWS ACCESS KEY> and <AWS SECRET KEY> with your AWS credentials, and my_aws_repo with a name of your choice.
+
+Tip
+The user and password settings are optional. If omitted, the AWS default credentials provider chain is used.
+
+Then the pipeline can be accessed with Nextflow as shown below:
+nextflow run https://git-codecommit.eu-west-1.amazonaws.com/v1/repos/my-repo
+
+
+In the above example replace my-repo with your own repository. Note also that AWS CodeCommit has different URLs depending the region in which you are working.
+
+Note
+The support for protocols other than HTTPS is not available at this time.
+
+
+
+
+Private server configuration
+Nextflow is able to access repositories hosted on private BitBucket, GitHub, GitLab and Gitea server installations.
+In order to use a private SCM installation you will need to set the server name and access credentials in your SCM configuration file .
+If, for example, the host name of your private GitLab server is gitlab.acme.org, you will need to have in the $HOME/.nextflow/scm file a configuration like the following:
+providers {
+    mygit {
+        server = 'http://gitlab.acme.org'
+        platform = 'gitlab'
+        user = 'your-user'
+        password = 'your-password'
+        token = 'your-api-token'
+    }
+}
+
+
+Then you will be able to run/pull a project with Nextflow using the following command line:
+nextflow run foo/bar -hub mygit
+
+
+Or, alternatively, using the Git clone URL:
+nextflow run http://gitlab.acme.org/foo/bar.git
+
+
+
+Note
+You must also specify the server API endpoint URL if it differs from the server base URL. For example, for GitHub Enterprise V3, add endpoint = 'https://git.your-domain.com/api/v3'.
+
+
+Warning
+When accessing a private SCM installation over https from a server that uses a custom SSL certificate, you may need to import the certificate into your local Java keystore. See Import the Certificate as a Trusted Certificate for more information.
+
+
+
+
+
+
+ Previous
+Next 
+
+
+
+© Copyright 2024, Seqera Labs, S.L.
+
+
+  Built with Sphinx using a
+    theme
+    provided by Read the Docs.
+   
+
+
+
+
+
+
+
+
+
+
+

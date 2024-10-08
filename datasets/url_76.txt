@@ -1,0 +1,600 @@
+
+
+
+
+
+
+
+
+
+Workflow grouping - Nextflow Patterns
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+          Skip to content
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            Nextflow Patterns
+          
+
+
+
+            
+              Workflow grouping
+            
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            Initializing search
+          
+
+
+
+
+
+
+
+
+
+
+
+
+    nextflow-io/patterns
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    Nextflow Patterns
+  
+
+
+
+
+
+
+    nextflow-io/patterns
+  
+
+
+
+
+
+
+    Home
+  
+
+
+
+
+
+
+    Basic patterns
+  
+
+
+
+
+
+            Basic patterns
+          
+
+
+
+
+    Channel duplication
+  
+
+
+
+
+
+    Sort FilePairs by sample name
+  
+
+
+
+
+
+    Create key to combine channels
+  
+
+
+
+
+
+
+
+
+
+    Scatter executions
+  
+
+
+
+
+
+            Scatter executions
+          
+
+
+
+
+    Process per file path
+  
+
+
+
+
+
+    Process per file chunk
+  
+
+
+
+
+
+    Process per file pairs
+  
+
+
+
+
+
+    Process per file range
+  
+
+
+
+
+
+    Process per CSV record
+  
+
+
+
+
+
+    Process per file output
+  
+
+
+
+
+
+
+
+
+
+    Gather results
+  
+
+
+
+
+
+            Gather results
+          
+
+
+
+
+    Process all outputs altogether
+  
+
+
+
+
+
+    Process outputs into groups
+  
+
+
+
+
+
+    Collect outputs into a file
+  
+
+
+
+
+
+
+
+
+
+    Organize outputs
+  
+
+
+
+
+
+            Organize outputs
+          
+
+
+
+
+    Store process outputs
+  
+
+
+
+
+
+    Store outputs matching a glob pattern
+  
+
+
+
+
+
+    Store outputs renaming files
+  
+
+
+
+
+
+
+
+
+
+    Other
+  
+
+
+
+
+
+            Other
+          
+
+
+
+
+    Get process work directory
+  
+
+
+
+
+
+    Ignore failing process
+  
+
+
+
+
+
+    State dependency
+  
+
+
+
+
+
+
+
+
+
+    Advanced patterns
+  
+
+
+
+
+
+            Advanced patterns
+          
+
+
+
+
+    Conditional process resources
+  
+
+
+
+
+
+    Conditional process execution (static)
+  
+
+
+
+
+
+    Conditional process execution (dynamic)
+  
+
+
+
+
+
+    Skip process execution
+  
+
+
+
+
+
+    Feedback loop
+  
+
+
+
+
+
+    Optional input
+  
+
+
+
+
+
+    Optional output
+  
+
+
+
+
+
+    Process when empty
+  
+
+
+
+
+
+    Task batching
+  
+
+
+
+
+
+
+    Workflow grouping
+  
+
+
+
+
+    Workflow grouping
+  
+
+
+
+
+      Table of contents
+    
+
+
+
+
+      Problem
+    
+
+
+
+
+
+      Solution
+    
+
+
+
+
+
+      Code
+    
+
+
+
+
+
+      Run it
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      Table of contents
+    
+
+
+
+
+      Problem
+    
+
+
+
+
+
+      Solution
+    
+
+
+
+
+
+      Code
+    
+
+
+
+
+
+      Run it
+    
+
+
+
+
+
+
+
+
+
+Workflow grouping
+Problem
+You have a subworkflow, and you would like to limit the number of parallel subworkflow executions.
+Solution
+For a single process, you could use the maxForks directive to limit the number of parallel process executions. For a subworkflow, you can achieve the same effect by merging the subworkflow's processes into a single process, and then using maxForks or the executor.queueSize config option.
+The following example is based on a "diamond-shaped" subworkflow, in order to show how to implement parallel steps in a Bash script. View the complete example to see the original subworkflow.
+Code
+params.n_groups = 10
+params.queue_size = 2
+
+process diamond_merged {
+    maxForks params.queue_size
+
+    input:
+    val(index)
+
+    output:
+    tuple val(index), path('d.txt')
+
+    script:
+    """
+    sleep 1
+
+    # process A
+    echo "subworkflow ${index}, process A was here" >> a.txt
+
+    # process B
+    process_b() {
+        cat a.txt >> b.txt
+        echo "subworkflow ${index}, process B was here" >> b.txt
+    }
+    process_b &
+
+    # process C
+    process_c() {
+        cat a.txt >> c.txt
+        echo "subworkflow ${index}, process C was here" >> c.txt
+    }
+    process_c &
+
+    wait
+
+    # process D
+    cat b.txt >> d.txt
+    cat c.txt >> d.txt
+    echo "subworkflow ${index}, process D was here" >> d.txt
+    """
+}
+
+workflow {
+    Channel.of(1..params.n_groups)
+      | diamond_merged
+}
+
+Run it
+Run the example using this command:
+nextflow run nextflow-io/patterns/workflow-grouping.nf
+
+
+
+
+
+
+
+
+
+  
+  
+    Made with
+    
+      Material for MkDocs
+    
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,223 @@
+
+
+
+
+
+Packages — Nextflow documentation
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Version dev (7c4538159) 
+
+Stable
+Edge
+Latest
+
+
+
+
+
+Get started
+
+Overview
+Installation
+Your first script
+
+Running pipelines
+
+Command line
+Configuration
+Executors
+Caching and resuming
+Reports
+Plugins
+
+Developing pipelines
+
+Scripts
+Working with files
+Processes
+Channels
+Workflows
+Modules
+Notifications
+Secrets
+Sharing pipelines
+Migrating from DSL 1
+
+Software dependencies
+
+Git
+Containers
+Conda environments
+Spack environments
+Wave containers
+
+Compute & storage
+
+Amazon Web Services
+Amazon S3
+Azure
+Google Cloud
+Kubernetes
+Fusion file system
+
+Reference
+
+CLI reference
+Configuration options
+Environment variables
+Feature flags
+Standard library
+Process reference
+Channel factories
+Operators
+
+Contributing
+
+Overview
+Workflow Diagram
+Packages
+nextflow
+nextflow.ast
+nextflow.cache
+nextflow.cli
+nextflow.cloud.aws
+nextflow.cloud.aws.nio
+nextflow.cloud.azure
+nextflow.cloud.google
+nextflow.config
+nextflow.container
+nextflow.dag
+nextflow.executor
+nextflow.extension
+nextflow.k8s
+nextflow.plugin
+nextflow.processor
+nextflow.scm
+nextflow.script
+nextflow.secret
+nextflow.trace
+
+
+Plugins
+
+Tutorials
+
+Using Nextflow with Flux
+Understanding task resource metrics
+
+
+
+
+            Nextflow is developed by:
+
+
+
+
+
+
+
+Nextflow
+
+
+
+
+
+
+Packages
+
+ Edit on GitHub
+
+
+
+
+
+
+
+Packages
+The following subpages correspond to packages in the Nextflow source code:
+
+
+nextflow
+nextflow.ast
+nextflow.cache
+nextflow.cli
+nextflow.cloud.aws
+nextflow.cloud.aws.nio
+nextflow.cloud.azure
+nextflow.cloud.google
+nextflow.config
+nextflow.container
+nextflow.dag
+nextflow.executor
+nextflow.extension
+nextflow.k8s
+nextflow.plugin
+nextflow.processor
+nextflow.scm
+nextflow.script
+nextflow.secret
+nextflow.trace
+
+
+
+
+
+
+ Previous
+Next 
+
+
+
+© Copyright 2024, Seqera Labs, S.L.
+
+
+  Built with Sphinx using a
+    theme
+    provided by Read the Docs.
+   
+
+
+
+
+
+
+
+
+
+
+

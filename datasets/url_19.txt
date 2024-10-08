@@ -1,0 +1,321 @@
+
+
+
+
+
+Sharing pipelines — Nextflow documentation
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Version dev (7c4538159) 
+
+Stable
+Edge
+Latest
+
+
+
+
+
+Get started
+
+Overview
+Installation
+Your first script
+
+Running pipelines
+
+Command line
+Configuration
+Executors
+Caching and resuming
+Reports
+Plugins
+
+Developing pipelines
+
+Scripts
+Working with files
+Processes
+Channels
+Workflows
+Modules
+Notifications
+Secrets
+Sharing pipelines
+Git configuration
+Using a local repository
+Publishing your pipeline
+Managing dependencies
+Code
+Standard dependencies
+The bin directory
+The lib directory
+
+
+Data
+Environment
+
+
+
+
+Migrating from DSL 1
+
+Software dependencies
+
+Git
+Containers
+Conda environments
+Spack environments
+Wave containers
+
+Compute & storage
+
+Amazon Web Services
+Amazon S3
+Azure
+Google Cloud
+Kubernetes
+Fusion file system
+
+Reference
+
+CLI reference
+Configuration options
+Environment variables
+Feature flags
+Standard library
+Process reference
+Channel factories
+Operators
+
+Contributing
+
+Overview
+Workflow Diagram
+Packages
+Plugins
+
+Tutorials
+
+Using Nextflow with Flux
+Understanding task resource metrics
+
+
+
+
+            Nextflow is developed by:
+
+
+
+
+
+
+
+Nextflow
+
+
+
+
+
+
+Sharing pipelines
+
+ Edit on GitHub
+
+
+
+
+
+
+
+Sharing pipelines
+Nextflow seamlessly integrates with popular Git providers, including BitBucket, GitHub, and GitLab for managing Nextflow pipelines as version-controlled Git repositories. This feature allows you to easily use other people’s Nextflow pipelines and publish your own pipelines.
+
+Note
+Nextflow is not meant to completely replace the Git tool. You may still need git to create new repositories or commit changes, etc.
+
+
+Git configuration
+You can configure your credentials for various Git providers in the Git configuration file, located at $HOME/.nextflow/scm. See Git for more information.
+
+
+Using a local repository
+Nextflow can work with repositories stored in a local or shared file system. The repository must be created as a bare repository.
+For example, given a bare repository at /shared/projects/foo.git, Nextflow is able to run it using the following syntax:
+nextflow run file:/shared/projects/foo.git
+
+
+See Git documentation for more details about how create and manage bare repositories.
+
+
+Publishing your pipeline
+In order to publish your Nextflow pipeline to GitHub (or any other supported platform) and allow other people to use it, you only need to create a GitHub repository containing all your project script and data files. If you don’t know how to do it, follow this simple tutorial that explains how create a GitHub repository.
+Nextflow only requires that the main script in your pipeline project is called main.nf. A different name can be used by specifying the manifest.mainScript attribute in the nextflow.config file that must be included in your project. For example:
+manifest.mainScript = 'my_very_long_script_name.nf'
+
+
+To learn more about this and other project metadata information, that can be defined in the Nextflow configuration file, read the Manifest section on the Nextflow configuration page.
+Once you have uploaded your pipeline project to GitHub other people can execute it simply using the project name or the repository URL.
+For if your GitHub account name is foo and you have uploaded a project into a repository named bar the repository URL will be http://github.com/foo/bar and people will able to download and run it by using either the command:
+nextflow run foo/bar
+
+
+or
+nextflow run http://github.com/foo/bar
+
+
+See the CLI page to learn how to use the Nextflow command line to run pipelines and manage pipeline projects.
+
+
+Managing dependencies
+Computational pipelines are rarely composed by a single script. In real world applications they depend on many other components, including other scripts and tools, databases, and specialized environments which provide compute and storage.
+These external dependencies are the primary challenge when sharing software, because the users need to recreate the environment around a tool in order to use it. This setup process is often painful and error prone, which severely hinders the ability to reproduce computational results on a system other than the one on which it was originally developed.
+Nextflow tackles this problem by integrating with existing tools for reproducible software, namely Git for source code and Docker for containers. These tools allow you to keep all the dependencies of your pipeline project in one place and track changes over time with version control.
+By making your pipeline project is self-contained, meaning all of its dependencies are fully defined in the project itself, you gain two major advantages:
+
+Portability: the pipeline can be run in virtually any environment with a Java VM and a container runtime
+Reproducibility: any results produced by the pipelined can be easily reproduced, even across different environments
+
+One way to account for dependencies is to break them down into three categories: code, data, and environment. Here we will describe how to include each of these dependencies in your Nextflow pipeline:
+
+Code
+Aside from pipeline scripts, you may have additional scripts and tools used by individual tasks.
+
+Standard dependencies
+Many standard tools can be accessed as Docker containers or Conda/Spack packages. In this case, you only need to specify the container image URL (e.g. from DockerHub) or package name with the container or conda directive, respectively.
+Make sure to enable the desired method in your Nextflow configuration:
+// containers
+docker.enabled = true
+
+// conda packages
+conda.enabled = true
+
+
+This way, when you launch your pipeline, Nextflow will automatically download the necessary dependencies to run your tasks based on this configuration.
+Read the Containers page to learn more about how to use containers with Nextflow, and the Conda environments page for Conda packages.
+
+Tip
+For maximal reproducibility, make sure to define a specific version for each tool. Otherwise, your pipeline might use different versions across subsequent runs, which can introduce subtle differences to your results.
+
+
+
+The bin directory
+As for custom scripts, you can include executable scripts in the bin directory of your pipeline repository. When configured correctly, these scripts can be executed like a regular command from any process script (i.e. without modifying the PATH environment variable or using an absolute path), and changing the script will cause the task to be re-executed on a resumed run (i.e. just like changing the process script itself).
+To configure a custom script:
+
+Save the script in the bin directory (relative to the pipeline repository root).
+Specify a portable shebang (see note below for details).
+Make the script executable. For example: chmod a+x bin/my_script.py
+
+
+Tip
+To maximize the portability of your bundled script, use env to dynamically resolve the location of the interpreter instead of hard-coding it in the shebang line.
+For example, shebang definitions #!/usr/bin/python and #!/usr/local/bin/python both hard-code specific paths to the Python interpreter. Instead, the following approach is more portable:
+#!/usr/bin/env python
+
+
+
+
+
+The lib directory
+Any Groovy scripts or JAR files in the lib directory will be automatically loaded and made available to your pipeline scripts. The lib directory is a useful way to provide utility code or external libraries without cluttering the pipeline scripts.
+
+
+
+Data
+In general, input data should be provided by external sources using parameters which can be controlled by the user. This way, a pipeline can be easily reused to process different datasets which are appropriate for the pipeline.
+Parameters can be declared with default values in the main script or in the configuration file:
+params.my_input = 'default input file'
+params.my_output = 'default output path'
+params.my_flag = false
+// ...
+
+
+When launching a pipeline, parameter values can be provided on the command line or in a params file (using the -params-file option). Options prefixed with a double dash (--) are interpreted as parameters:
+nextflow run <your pipeline> --my_input /path/to/input/file --my_output /other/path --my_flag true
+
+
+When a pipeline requires some small data that rarely changes, it may be easier to include the data in the pipeline repository. You can reference this data from the pipeline script in a portable manner (i.e. without relying on an absolute path) by using the projectDir implicit variable, which refers to the local copy of the pipeline repository.
+The following example references the file dataset/sequences.fa in the pipeline repository:
+sequences = file("$projectDir/dataset/sequences.fa")
+sequences.splitFasta {
+    println it
+}
+
+
+
+
+Environment
+The “environment” refers to any other aspects of the environment in which your pipeline is executed, such as environment variables and resource managers like SLURM.
+Any environment variable that may be required by the tools in your pipeline can be defined under the env scope in your Nextflow configuration. For example:
+env {
+  DELTA = 'foo'
+  GAMMA = 'bar'
+}
+
+
+Similarly, if you use an HPC scheduler like SLURM or a cloud batch service like AWS Batch to execute tasks in a distributed manner, you can use a configuration profile to define the settings for a given environment.
+See Configuration for more information about Nextflow configuration and Executors for more information about executors.
+
+
+
+
+
+
+ Previous
+Next 
+
+
+
+© Copyright 2024, Seqera Labs, S.L.
+
+
+  Built with Sphinx using a
+    theme
+    provided by Read the Docs.
+   
+
+
+
+
+
+
+
+
+
+
+

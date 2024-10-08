@@ -1,0 +1,439 @@
+
+
+
+
+
+Understanding task resource metrics — Nextflow documentation
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Version dev (7c4538159) 
+
+Stable
+Edge
+Latest
+
+
+
+
+
+Get started
+
+Overview
+Installation
+Your first script
+
+Running pipelines
+
+Command line
+Configuration
+Executors
+Caching and resuming
+Reports
+Plugins
+
+Developing pipelines
+
+Scripts
+Working with files
+Processes
+Channels
+Workflows
+Modules
+Notifications
+Secrets
+Sharing pipelines
+Migrating from DSL 1
+
+Software dependencies
+
+Git
+Containers
+Conda environments
+Spack environments
+Wave containers
+
+Compute & storage
+
+Amazon Web Services
+Amazon S3
+Azure
+Google Cloud
+Kubernetes
+Fusion file system
+
+Reference
+
+CLI reference
+Configuration options
+Environment variables
+Feature flags
+Standard library
+Process reference
+Channel factories
+Operators
+
+Contributing
+
+Overview
+Workflow Diagram
+Packages
+Plugins
+
+Tutorials
+
+Using Nextflow with Flux
+Understanding task resource metrics
+CPU Usage
+Memory Usage
+Job Duration
+I/O Usage
+
+
+
+
+
+
+            Nextflow is developed by:
+
+
+
+
+
+
+
+Nextflow
+
+
+
+
+
+
+Understanding task resource metrics
+
+ Edit on GitHub
+
+
+
+
+
+
+
+Understanding task resource metrics
+This tutorial explains how the resource usage metrics from the Execution report are computed.
+
+CPU Usage
+The plot reports how much CPU resources were used by each process.
+
+Let’s illustrate how this plot behaves with several examples.
+In the first example, let’s consider the simple use case in which a process performs one task of pure computation using one CPU. Then, you expect the Raw Usage tab to report 100%. If the task is distributed over, 2, 3, 4, etc. CPUs, then the Raw Usage will be 200%, 300%, 400%, etc. respectively. The % Allocated tab just rescales the raw value usage with respect to the number of CPUs set with the cpus directive (if not set with the directive, the number of CPUs is set to 1, thus showing the same values as in the Raw Usage tab). Using the program stress as follows would report 100% in the Raw Usage tab and 50% in the % Allocated tab since the process asked twice the number of CPUs needed by the process:
+#!/usr/bin/env nextflow
+
+process CpuUsageEx1 {
+  cpus 2
+
+  """
+  stress -c 1 -t 10 # compute square-root of random numbers during 10s using 1 CPU
+  """
+}
+
+
+In the second example, some time will be spent performing pure computation and some time just waiting. Using the program stress and sleep as follows would report 75% in the Raw Usage tab:
+#!/usr/bin/env nextflow
+
+process CpuUsageEx2 {
+  cpus 1
+
+  """
+  stress -c 1 -t 10 # compute square-root of random numbers during 10s using 1 CPU
+  stress -c 1 -t 5 # compute square-root of random numbers during 5s using 1 CPU
+  sleep 5 # use no CPU during 5s
+  """
+}
+
+
+Indeed, the percentage of the CPU that this process got is a weighted average taking into account the percentage of the CPU and duration of each individual program over the job duration (a.k.a. elapsed real time, real time or wall time ) as follows:
+
+\[
+\frac{ 100\% \times 10s + 100\% \times 5s + 0\% \times 5s }{10s+5s+5s} = 75\%
+\]
+The third example is similar to the second one except that the pure computation stage is performed in a single step forked on 2 CPUs:
+#!/usr/bin/env nextflow
+
+process CpuUsageEx3 {
+  cpus 2
+
+  """
+  stress -c 2 -t 10 # compute square-root of random numbers during 10s using 2 CPUs
+  sleep 10 # use no CPU during 10s
+  """
+}
+
+
+The Raw Usage tab would report 100% in the Raw Usage tab:
+
+\[
+\frac{ 200\% \times 10s }{10s+10s} = 100\%
+\]
+The % Allocated tab would report 50%, however, it would not be relevant to change the cpus directive from 2 to 1 as the process really uses 2 CPUs at it peak load.
+
+Tip
+The stress program can be installed with sudo apt-get install stress or sudo yum install stress depending on your Linux distribution.
+
+
+
+Memory Usage
+The plot has three tabs showing the usage of the physical memory (RAM), the virtual memory (vmem) and the percentage of RAM used by the process with respect to what was set in the memory directive. The peak usage during the execution of the process is reported for both physical and virtual memories.
+
+Note
+To better understand the memory usage plot, it is important to know that:
+
+the total amount of memory used by a process is the virtual memory (vmem). The vmem contains all memory areas whether they are in the physical memory (RAM), in the Swap space, on the disk or shared with other processes,
+the resident set size (RSS) is the amount of space of physical memory (RAM) held by a process,
+the relationship is: vmem \(\geq\) RSS + Swap,
+the memory directive sets the RAM requested by the process.
+
+
+Let’s illustrate how this plot behaves with one example which relies on two C programs.
+The first program just allocates a variable of 1 GiB:
+ 1#include <stdio.h>
+ 2#include <stdlib.h>
+ 3#include <sys/resource.h>
+ 4#include <sys/time.h>
+ 5#include <sys/types.h>
+ 6#include <unistd.h>
+ 7#include <time.h>
+ 8
+ 9/* Get vmem and rss usage from /proc/<pid>/statm */
+10static int mem_used(pid_t pid, unsigned long* vmem, unsigned long* rss) {
+11    FILE* file;
+12    char path[40];
+13    unsigned int page_size;
+14
+15    snprintf(path, 40, "/proc/%ld/statm", (long) pid);
+16    file = fopen(path, "r");
+17    // vmem and rss are the first values in the file
+18    fscanf(file, "%lu %lu", vmem, rss);
+19    // values in statm are in pages so to get bytes we need to know page size
+20    page_size = (unsigned) getpagesize();
+21    *vmem = *vmem * page_size;
+22    *rss = *rss * page_size;
+23
+24    fclose(file);
+25    return 0;
+26}
+27
+28int main(int argc, char **argv) {
+29    unsigned char *address;
+30    char input;
+31    size_t size = 1024*1024*1024;  // 1 GiB
+32    unsigned long i;
+33    unsigned long vmem = 0;
+34    unsigned long rss = 0;
+35    pid_t pid;
+36
+37    pid = getpid();
+38    printf("Pid: %ld\n", (long) pid);
+39
+40    mem_used(pid, &vmem, &rss);
+41    printf("VMEM: %lu RSS: %lu\n", vmem, rss);
+42
+43    address = malloc(size);
+44    printf("Allocated %d Bytes of memory\n", (int) size);
+45
+46    mem_used(pid, &vmem, &rss);
+47    printf("VMEM: %lu RSS: %lu\n", vmem, rss);
+48
+49    // Leave time for nextflow to get information
+50    sleep(15);
+51
+52    free(address);
+53    return 0;
+54}
+
+
+The second program allocates a variable of 1 GiB and fills it with data:
+ 1#include <stdio.h>
+ 2#include <stdlib.h>
+ 3#include <sys/resource.h>
+ 4#include <sys/time.h>
+ 5#include <sys/types.h>
+ 6#include <unistd.h>
+ 7#include <time.h>
+ 8
+ 9/* Get vmem and rss usage from /proc/<pid>/statm */
+10static int mem_used(pid_t pid, unsigned long* vmem, unsigned long* rss) {
+11    FILE* file;
+12    char path[40];
+13    unsigned int page_size;
+14
+15    snprintf(path, 40, "/proc/%ld/statm", (long) pid);
+16    file = fopen(path, "r");
+17    // vmem and rss are the first values in the file
+18    fscanf(file, "%lu %lu", vmem, rss);
+19    // values in statm are in pages so to get bytes we need to know page size
+20    page_size = (unsigned) getpagesize();
+21    *vmem = *vmem * page_size;
+22    *rss = *rss * page_size;
+23
+24    fclose(file);
+25    return 0;
+26}
+27
+28int main(int argc, char **argv) {
+29    unsigned char *address;
+30    char input;
+31    size_t size = 1024*1024*1024;  // 1 GiB
+32    unsigned long i;
+33    unsigned long vmem = 0;
+34    unsigned long rss = 0;
+35    pid_t pid;
+36
+37    pid = getpid();
+38    printf("Pid: %ld\n", (long) pid);
+39
+40    mem_used(pid, &vmem, &rss);
+41    printf("VMEM: %lu RSS: %lu\n", vmem, rss);
+42
+43    address = malloc(size);
+44    printf("Allocated %d Bytes of memory\n", (int) size);
+45
+46    mem_used(pid, &vmem, &rss);
+47    printf("VMEM: %lu RSS: %lu\n", vmem, rss);
+48
+49    printf("Filling memory with data...");
+50    fflush(stdout);
+51    for (i = 0; i < size; i++) {
+52        *(address + i) = 123;
+53    }
+54
+55    mem_used(pid, &vmem, &rss);
+56    printf("\nVMEM: %lu RSS: %lu\n", vmem, rss);
+57
+58    // Leave time for nextflow to get information
+59    sleep(15);
+60
+61    free(address);
+62    return 0;
+63}
+
+
+The first and second programs are executed in foo and bar processes respectively as follows:
+#!/usr/bin/env nextflow
+
+process foo {
+    memory '1.5 GB'
+
+    """
+    memory_vmem_1GiB_ram_0Gib
+    """
+}
+
+process bar {
+    memory '1.5 GB'
+
+    """
+    memory_vmem_1GiB_ram_1Gib
+    """
+}
+
+
+The Virtual (RAM + Disk swap) tab shows that both foo and bar processes use the same amount of virtual memory (~1 GiB):
+
+However, the Physical (RAM) tab shows that only the bar process uses ~1 GiB of RAM while foo process uses ~0 GiB:
+
+As expected, the % RAM Allocated tab shows that 0% of the resource set in the memory directive was used for foo process while 67% (= 1 / 1.5) of the resource were used for bar process:
+
+
+Warning
+Memory and storage metrics are reported in bytes. This means that 1KB = \(1024\) bytes, 1 MB = \(1024^2\) bytes, 1 GB = \(1024^3\) bytes, etc.
+
+
+
+Job Duration
+The plot has two tabs the job duration (a.k.a. elapsed real time, real time or wall time ) in the Raw Usage tag and the percentage of requested time used in the % Allocated tab with respect to the duration set in the time directive of the process.
+
+
+
+I/O Usage
+The plot has two tabs showing how many data were read and/or written each process. For example, the following processes read and write 1GB and 256MB of data respectively:
+#!/usr/bin/env nextflow
+
+process io_read_write_1G {
+  """
+  dd if=/dev/zero of=/dev/null bs=1G count=1
+  """
+}
+
+process io_read_write_256M {
+  """
+  dd if=/dev/zero of=/dev/null bs=256M count=1
+  """
+}
+
+
+Read tab:
+
+Write tab:
+
+
+
+
+
+
+ Previous
+
+
+
+© Copyright 2024, Seqera Labs, S.L.
+
+
+  Built with Sphinx using a
+    theme
+    provided by Read the Docs.
+   
+
+
+
+
+
+
+
+
+
+
+

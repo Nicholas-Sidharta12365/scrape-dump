@@ -1,0 +1,409 @@
+
+
+
+
+
+Environment variables — Nextflow documentation
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Version dev (7c4538159) 
+
+Stable
+Edge
+Latest
+
+
+
+
+
+Get started
+
+Overview
+Installation
+Your first script
+
+Running pipelines
+
+Command line
+Configuration
+Executors
+Caching and resuming
+Reports
+Plugins
+
+Developing pipelines
+
+Scripts
+Working with files
+Processes
+Channels
+Workflows
+Modules
+Notifications
+Secrets
+Sharing pipelines
+Migrating from DSL 1
+
+Software dependencies
+
+Git
+Containers
+Conda environments
+Spack environments
+Wave containers
+
+Compute & storage
+
+Amazon Web Services
+Amazon S3
+Azure
+Google Cloud
+Kubernetes
+Fusion file system
+
+Reference
+
+CLI reference
+Configuration options
+Environment variables
+Java settings
+Nextflow settings
+Proxy settings
+
+
+Feature flags
+Standard library
+Process reference
+Channel factories
+Operators
+
+Contributing
+
+Overview
+Workflow Diagram
+Packages
+Plugins
+
+Tutorials
+
+Using Nextflow with Flux
+Understanding task resource metrics
+
+
+
+
+            Nextflow is developed by:
+
+
+
+
+
+
+
+Nextflow
+
+
+
+
+
+
+Environment variables
+
+ Edit on GitHub
+
+
+
+
+
+
+
+Environment variables
+The following environment variables control the configuration of the Nextflow runtime and the underlying Java virtual machine.
+
+Java settings
+
+JAVA_CMDDefines the path location of the Java binary command used to launch Nextflow.
+
+JAVA_HOMEDefines the path location of the Java VM installation used to run Nextflow.
+
+
+
+
+Nextflow settings
+
+NXF_ANSI_LOGEnables/disables ANSI console output (default true when ANSI terminal is detected).
+
+NXF_ANSI_SUMMARYEnables/disables ANSI completion summary: true\|false (default: print summary if execution last more than 1 minute).
+
+NXF_ASSETSDefines the directory where downloaded pipeline repositories are stored (default: $NXF_HOME/assets)
+
+NXF_CACHE_DIR
+New in version 24.02.0-edge.
+
+
+Defines the base cache directory when using the default cache store (default: "$launchDir/.nextflow").
+
+NXF_CHARLIECLOUD_CACHEDIRDirectory where remote Charliecloud images are stored. When using a computing cluster it must be a shared folder accessible from all compute nodes.
+
+NXF_CLOUDCACHE_PATH
+New in version 23.07.0-edge.
+
+
+Defines the base cache path when using the cloud cache store.
+
+NXF_CLOUD_DRIVERDefines the default cloud driver to be used if not specified in the config file or as command line option, either aws or google.
+
+NXF_CONDA_CACHEDIRDirectory where Conda environments are stored. When using a computing cluster it must be a shared folder accessible from all compute nodes.
+
+NXF_CONDA_ENABLED
+New in version 22.08.0-edge.
+
+
+Enable the use of Conda recipes defined by using the conda directive. (default: false).
+
+NXF_DEFAULT_DSL
+New in version 22.03.0-edge.
+
+
+Defines the DSL version that should be used in not specified otherwise in the script of config file (default: 2)
+
+NXF_DISABLE_CHECK_LATEST
+New in version 23.09.0-edge.
+
+
+Nextflow automatically checks for a newer version of itself unless this option is enabled (default: false).
+
+NXF_DISABLE_JOBS_CANCELLATION
+New in version 21.12.0-edge.
+
+
+Disables the cancellation of child jobs on workflow execution termination.
+
+NXF_DISABLE_PARAMS_TYPE_DETECTION
+New in version 23.07.0-edge.
+
+
+Disables the automatic type detection of command line parameters.
+
+NXF_DISABLE_WAVE_SERVICE
+New in version 23.08.0-edge.
+
+
+Disables the requirement for Wave service when enabling the Fusion file system.
+
+NXF_ENABLE_AWS_SES
+New in version 23.06.0-edge.
+
+
+Enable to use of AWS SES native API for sending emails in place of legacy SMTP settings (default: false)
+
+NXF_ENABLE_FS_SYNC
+New in version 23.10.0.
+
+
+When enabled the job script will execute Linux sync command on job completion. This may be useful to synchronize the job state over shared file systems (default: false)
+
+NXF_ENABLE_SECRETS
+New in version 21.09.0-edge.
+
+
+Enable Nextflow secrets features (default: true)
+
+NXF_ENABLE_STRICT
+New in version 22.05.0-edge.
+
+
+Enable Nextflow strict execution mode (default: false)
+
+NXF_ENABLE_VIRTUAL_THREADS
+New in version 23.05.0-edge.
+
+
+Enable the use of virtual threads in the Nextflow runtime (default: false)
+
+NXF_EXECUTORDefines the default process executor, e.g. sge
+
+NXF_FILE_ROOT
+New in version 23.05.0-edge.
+
+
+The file storage path against which relative file paths are resolved.
+
+For example, with NXF_FILE_ROOT=/some/root/path, the use of file('foo') will be resolved to the absolute path /some/root/path/foo. A remote root path can be specified using the usual protocol prefix, e.g. NXF_FILE_ROOT=s3://my-bucket/data. Files defined using an absolute path are not affected by this setting.
+
+NXF_HOMENextflow home directory (default: $HOME/.nextflow).
+
+NXF_JAVA_HOMEDefines the path location of the Java VM installation used to run Nextflow. This variable overrides the JAVA_HOME variable if defined.
+
+NXF_JVM_ARGS
+New in version 21.12.1-edge.
+
+
+Allows the setting Java VM options. This is similar to NXF_OPTS however it’s only applied the JVM running Nextflow and not to any java pre-launching commands.
+
+NXF_LOG_FILEThe filename of the Nextflow log (default: .nextflow.log)
+
+NXF_OFFLINEWhen true prevents Nextflow from automatically downloading and updating remote project repositories (default: false).
+
+
+Changed in version 23.09.0-edge: This option also disables the automatic version check (see NXF_DISABLE_CHECK_LATEST).
+
+
+
+Changed in version 23.11.0-edge: This option also prevents plugins from being downloaded. Plugin versions must be specified in offline mode, or else Nextflow will fail.
+
+
+NXF_OPTSProvides extra options for the Java and Nextflow runtime. It must be a blank separated list of -Dkey[=value] properties.
+
+NXF_ORGDefault organization prefix when looking for a hosted repository (default: nextflow-io).
+
+NXF_PARAMS_FILE
+New in version 20.10.0.
+
+
+Defines the path location of the pipeline parameters file .
+
+NXF_PID_FILEName of the file where the process PID is saved when Nextflow is launched in background.
+
+NXF_PLUGINS_DEFAULTWhether to use the default plugins when no plugins are specified in the Nextflow configuration (default: true).
+
+NXF_PLUGINS_DIRThe path where the plugin archives are loaded and stored (default: $NXF_HOME/plugins).
+
+NXF_PLUGINS_TEST_REPOSITORY
+New in version 23.04.0.
+
+
+Defines a custom plugin registry or plugin release URL for testing plugins outside of the main registry. See Testing plugins for more information.
+
+NXF_PUBLISH_FAIL_ON_ERROR
+New in version 24.04.3.
+
+
+Defines the default behavior of publishDir.failOnError setting. See publishDir directive for more information.
+
+NXF_SCM_FILE
+New in version 20.10.0.
+
+
+Defines the path location of the SCM config file .
+
+NXF_SINGULARITY_CACHEDIRDirectory where remote Singularity images are stored. When using a computing cluster it must be a shared folder accessible from all compute nodes.
+
+NXF_SINGULARITY_LIBRARYDIR
+New in version 21.09.0-edge.
+
+
+Directory where remote Singularity images are retrieved. It should be a directory accessible to all compute nodes.
+
+NXF_SPACK_CACHEDIRDirectory where Spack environments are stored. When using a computing cluster it must be a shared folder accessible from all compute nodes.
+
+NXF_SPACK_ENABLED
+New in version 23.02.0-edge.
+
+
+Enable the use of Spack recipes defined by using the spack directive. (default: false).
+
+NXF_TEMPDirectory where temporary files are stored
+
+NXF_TRACEEnable trace level logging for the specified packages. Equivalent to the -trace command-line option.
+
+NXF_VERDefines which version of Nextflow to use.
+
+NXF_WORKDirectory where working files are stored (usually your scratch directory)
+
+NXF_WRAPPER_STAGE_FILE_THRESHOLD
+New in version 23.05.0-edge.
+
+
+Defines the minimum size of the .command.run staging script for it to be written to a separate .command.stage file (default: '1 MB').
+
+This setting is useful for executors that impose a size limit on job scripts.
+
+
+
+
+Proxy settings
+
+FTP_PROXY
+New in version 21.06.0-edge.
+
+
+Defines the FTP proxy server. Proxy authentication is supported by providing the credentials in the proxy URL, e.g. ftp://user:password@proxy-host.com:port.
+
+HTTP_PROXYDefines the HTTP proxy server.
+
+
+New in version 21.06.0-edge: Proxy authentication is supported by providing the credentials in the proxy URL, e.g. http://user:password@proxy-host.com:port.
+
+
+HTTPS_PROXYDefines the HTTPS proxy server.
+
+
+New in version 21.06.0-edge: Proxy authentication is supported by providing the credentials in the proxy URL, e.g. https://user:password@proxy-host.com:port.
+
+
+NO_PROXYDefines one or more host names that should not use the proxy server. Separate multiple names using a comma character.
+
+
+
+
+
+
+
+ Previous
+Next 
+
+
+
+© Copyright 2024, Seqera Labs, S.L.
+
+
+  Built with Sphinx using a
+    theme
+    provided by Read the Docs.
+   
+
+
+
+
+
+
+
+
+
+
+
